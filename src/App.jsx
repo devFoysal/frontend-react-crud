@@ -1,40 +1,43 @@
-import Layout from "./hoc/Layout";
 import { Routes, Route } from "react-router-dom";
+import Cookies from "universal-cookie";
+import { ToastContainer } from 'react-toastify';
+
 import Home from "./pages/Home";
 import SignIn from "./pages/Auth/SignIn";
-import SignUp from "./pages/Auth/SignUp";
 import Products from "./pages/Products";
-import DashboardProducts from "./pages/Dashboard/Products";
 import NotFound from "./pages/NotFound";
 import PrivateRoutes from "./components/Routes/PrivateRoutes";
-import Dashboard from "./pages/Dashboard";
-import { useState } from "react";
-import DashboardLayout from "./hoc/DashboardLayout";
-import PublicRoutes from "./components/Routes/PublicRoutes";
 
-function App() {
-  const [auth, setAuth] = useState(false);
+// Admin
+import Dashboard from "./pages/Admin/Dashboard";
+import ProductList from "./pages/Admin/Products";
+
+const App = () => {
+  const cookies = new Cookies();
+  const routePrefix = "/admin";
   return (
     <>
-      {/* {auth && (
-        <DashboardLayout>
-          <Routes>
-            <Route path="/" element={<PrivateRoutes />} >
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/products" element={<DashboardProducts />} />
-            </Route>
-          </Routes>
-        </DashboardLayout>
-      )} */}
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Layout>
+      <ToastContainer position="top-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light" />
+      <Routes>
+        <Route index element={<Home />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/products" element={<Products />} />
+        <Route path="/signin" element={<SignIn />} />
+        <Route element={<PrivateRoutes user={!!cookies.get('isAuthenticated')} />} >
+          <Route path={`${routePrefix}/dashboard`} element={<Dashboard />} />
+          <Route path={`${routePrefix}/products`} element={<ProductList />} />
+        </Route>
+        <Route path="*" element={<NotFound />} />
+      </Routes>
 
     </>
 
