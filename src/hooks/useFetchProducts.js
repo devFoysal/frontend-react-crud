@@ -7,54 +7,36 @@ import {
 } from "../app/features/product/productApiSlice";
 
 const useFetchProducts = () => {
-  const pageNumber = useRef(1);
-  const filter = useRef("");
-
+  const currentPage = useRef(1);
   const [getProducts, { isError, isFetching, isLoading, isSuccess }] =
     useLazyGetProductsQuery();
-  // const [getMoreProducts] = useLazyGetMorePostsQuery();
 
-  const { productList } = productApiSlice.endpoints.getProducts.useQueryState(
-    undefined,
-    {
+  const { productList, totalProducts } =
+    productApiSlice.endpoints.getProducts.useQueryState(currentPage?.current, {
       selectFromResult: (result) => {
         return {
+          totalProducts: result?.data?.totalProducts,
           productList: productSelectors.selectAll(
             result?.data ?? productAdapter.getInitialState()
           ),
         };
       },
-    }
-  );
+    });
 
   const fetchProducts = async () => {
-    await getProducts();
+    await getProducts(1);
   };
 
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  // const getProductsByCategory = useCallback(async () => {
-  //     pageNumber.current = 1;
-  //     if (!hasMorePages || postFetching) return;
-  //     await getProducts([1, selectedCategory]);
-  // }, [selectedCategory]);
+  const loadMoreData = async (page) => {
+    currentPage.current = page;
 
-  // useEffect(() => {
-  //     getProductsByCategory();
-  // }, [selectedCategory]);
-
-  const handleFilterPost = async (props) => {
-    filter.current = props;
-    await getProducts([1, props]);
-  };
-
-  const loadMoreData = async () => {
-    // pageNumber.current += 1;
-    // setTimeout(async () => {
-    //   await getMoreProducts([pageNumber.current, filter.current]);
-    // }, 2000);
+    setTimeout(async () => {
+      await getProducts(currentPage?.current);
+    }, 500);
   };
 
   return {
@@ -63,10 +45,8 @@ const useFetchProducts = () => {
     isLoading,
     isSuccess,
     productList,
-    // pagination,
-    // hasMorePages,
     loadMoreData,
-    handleFilterPost,
+    totalProducts,
   };
 };
 

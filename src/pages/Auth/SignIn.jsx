@@ -31,7 +31,7 @@ const SignIn = () => {
     }
 
     if (cookies.get('isAuthenticated')) {
-        return (<Navigate to="/admin/dashboard" />)
+        return (<Navigate to="/admin/products" />)
     }
 
     const submitForm = (e) => {
@@ -42,7 +42,9 @@ const SignIn = () => {
                 toast.success(res?.message)
                 cookies.set("user", JSON.stringify(res?.user))
                 cookies.set("isAuthenticated", !!res?.token)
-                navigate("/admin/dashboard")
+                setTimeout(() => {
+                    navigate("/admin/products")
+                }, 500)
             }).catch(error => {
                 toast.error(error?.data?.message)
             })
@@ -51,7 +53,9 @@ const SignIn = () => {
                 toast.success(res?.message)
                 cookies.set("user", JSON.stringify(res?.user))
                 cookies.set("isAuthenticated", !!res?.token)
-                navigate("/admin/dashboard")
+                setTimeout(() => {
+                    navigate("/admin/products")
+                }, 500)
             }).catch(error => {
                 toast.error(error?.data?.message)
             })

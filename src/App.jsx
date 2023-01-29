@@ -18,7 +18,7 @@ const App = () => {
   return (
     <>
       <ToastContainer position="top-center"
-        autoClose={5000}
+        autoClose={300}
         hideProgressBar={false}
         newestOnTop={false}
         closeOnClick
@@ -33,7 +33,6 @@ const App = () => {
         <Route path="/products" element={<Products />} />
         <Route path="/signin" element={<SignIn />} />
         <Route element={<PrivateRoutes user={!!cookies.get('isAuthenticated')} />} >
-          <Route path={`${routePrefix}/dashboard`} element={<Dashboard />} />
           <Route path={`${routePrefix}/products`} element={<ProductList />} />
         </Route>
         <Route path="*" element={<NotFound />} />

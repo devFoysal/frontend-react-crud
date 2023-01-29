@@ -6,36 +6,59 @@ export const productAdapter = createEntityAdapter({
 });
 
 export const productApiSlice = apiSlice
-  .enhanceEndpoints({ addTagTypes: ["Product"] })
+  .enhanceEndpoints({ addTagTypes: ["products"] })
   .injectEndpoints({
     endpoints: (builder) => ({
       getProducts: builder.query({
-        query: () => `products`,
+        query: (page) => `products?page=${page}`,
         providesTags: (result, error, arg) => {
           return result
             ? [
-                ...result?.ids?.map((id) => ({ type: "Product", id })),
-                "Product",
+                ...result?.ids?.map((id) => ({ type: "products", id })),
+                "products",
               ]
-            : ["Product"];
+            : ["products"];
         },
         transformResponse: (response) => {
-          return productAdapter.addMany(
+          return productAdapter.setAll(
             productAdapter.getInitialState({
               hasMorePages: true,
+              totalProducts: Math.floor(response?.count / 5),
             }),
-            response
+            response.rows
           );
         },
-      }),
-
-      getMoreProducts: builder.query({
-        query: () => `products`,
+        async onQueryStarted(page, { queryFulfilled, dispatch }) {
+          if (!page) {
+            return;
+          }
+          const { data, error } = await queryFulfilled;
+  
+          if (data) {
+            // Add product On Current Request To Page 1
+            dispatch(
+              productApiSlice.util.updateQueryData("getProducts", 1, (draft) => {
+                // productAdapter.addMany(draft, productSelectors.selectAll(data));
+                productAdapter.setAll(draft, productSelectors.selectAll(data));
+                // draft.hasMorePages;
+              })
+            );
+  
+            if (page > 1) {
+              // Remove Cached Data From State Since We Already Added It To Page 1
+              dispatch(
+                productApiSlice.util.updateQueryData("getProducts", page, (draft) => {
+                  draft = productAdapter.getInitialState();
+                })
+              );
+            }
+          }
+        },
       }),
 
       getProduct: builder.query({
         query: (id) => `products/${id}`,
-        providesTags: (result, error, id) => [{ type: "Product", id }],
+        providesTags: (result, error, id) => [{ type: "products", id }],
         // transformResponse: (response) => response?.data,
       }),
 
@@ -67,17 +90,26 @@ export const productApiSlice = apiSlice
           };
         },
       }),
+      deleteMultipleProduct: builder.mutation({
+        query: (ids) => {
+          return {
+            url: `products/multiple/delete`,
+            method: "DELETE",
+            body: ids,
+          };
+        },
+      }),
     }),
     overrideExisting: true,
   });
 
 export const {
   useLazyGetProductsQuery,
-  useLazyGetMoreProductsQuery,
   useGetProductQuery,
   useAddProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
+  useDeleteMultipleProductMutation,
 } = productApiSlice;
 
 export const productSelectors = productAdapter.getSelectors((state) => state);

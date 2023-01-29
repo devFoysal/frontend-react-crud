@@ -5,12 +5,12 @@ import DashboardLayout from '../../../hoc/DashboardLayout'
 import useFetchProducts from '../../../hooks/useFetchProducts';
 
 const Products = () => {
-  const { productList, isSuccess, isLoading } = useFetchProducts();
+  const { productList, totalProducts, isSuccess, isLoading } = useFetchProducts();
 
   return (
     <DashboardLayout>
       {isLoading && <Loader />}
-      {isSuccess && (<ProductTable data={productList} />)}
+      {isSuccess && (<ProductTable totalCount={totalProducts} data={productList} />)}
     </DashboardLayout>
   )
 }

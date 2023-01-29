@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
-import { AiOutlineFilter, AiOutlinePlus } from "react-icons/ai";
-import { Link } from 'react-router-dom';
+import { AiOutlineDelete, AiOutlinePlus } from "react-icons/ai";
 import { toast } from 'react-toastify';
-import { useAddProductMutation, useDeleteProductMutation, useUpdateProductMutation } from '../../app/features/product/productApiSlice';
+import { useAddProductMutation, useDeleteMultipleProductMutation, useDeleteProductMutation, useUpdateProductMutation } from '../../app/features/product/productApiSlice';
+import useFetchProducts from '../../hooks/useFetchProducts';
 import Loader from '../Loader';
 import ModalWrapper from '../Modal/ModalWrapper';
+import Pagination from '../Pagination';
 
 
 const initialState = {
@@ -14,16 +15,19 @@ const initialState = {
     description: ""
 }
 
-const ProductTable = ({ data }) => {
-    const [product, setProduct] = useState(initialState);
-    const [products, setProducts] = useState(data);
-    const [deletedIds, setDeletedIds] = useState([]);
-    const [isEdit, setIsEdit] = useState(false);
-    const [openModal, setOpenModal] = useState(false);
-
+const ProductTable = ({ data, totalCount }) => {
     const [addProduct, { isLoading: addLoading }] = useAddProductMutation();
     const [updateProduct, { isLoading: updateLoading }] = useUpdateProductMutation();
     const [deleteProduct] = useDeleteProductMutation();
+    const [deleteMultipleProduct] = useDeleteMultipleProductMutation();
+    const [currentPage, setCurrentPage] = useState(1);
+    const { loadMoreData } = useFetchProducts();
+
+    const [product, setProduct] = useState(initialState);
+    const [products, setProducts] = useState(data?.map(item => ({ ...item, selected: false })));
+    const [isEdit, setIsEdit] = useState(false);
+    const [openModal, setOpenModal] = useState(false);
+
 
     const handelChange = (e) => {
         e.preventDefault();
@@ -49,12 +53,40 @@ const ProductTable = ({ data }) => {
     const handelDelete = (product) => {
         deleteProduct(product?.id).unwrap().then(res => {
             toast.success(res?.message)
-
             setProducts(prevState => prevState?.filter(item => item.id !== product?.id))
-            // setDeletedIds(prevState => [...prevState, product?.id])
         }).catch(error => {
             toast.error(error?.data?.message)
         })
+    }
+
+    const handelCheckbox = (e, product) => {
+
+        if (product === 'all') {
+            e.target.checked
+                ? setProducts(prevState => prevState?.map(item => ({ ...item, selected: true })))
+                : setProducts(prevState => prevState?.map(item => ({ ...item, selected: false })))
+        } else {
+            e.target.checked
+                ? setProducts(prevState => prevState?.map(item => item?.id === product?.id ? { ...item, selected: true } : item))
+                : setProducts(prevState => prevState?.map(item => item?.id === product?.id ? { ...item, selected: false } : item))
+        }
+    }
+
+    const selectedProducts = products?.filter(item => item?.selected).map(item => item?.id);
+
+    const multipleProductDelete = () => {
+        deleteMultipleProduct({ ids: selectedProducts }).unwrap().then(res => {
+            toast.success(res?.message)
+            setProducts(prevState => prevState?.filter(item => selectedProducts?.indexOf(item.id) === -1))
+        }).catch(error => {
+            console.log(error, 'error')
+            toast.error(error?.data?.message)
+        })
+    }
+
+    const handelPagination = (page) => {
+        setCurrentPage(page)
+        loadMoreData(page)
     }
 
     const submitForm = (e) => {
@@ -98,6 +130,7 @@ const ProductTable = ({ data }) => {
     }
 
     const formProcessing = (addLoading || updateLoading);
+
     return (
         <>
             <ModalWrapper open={openModal} close={setOpenModal} title={isEdit ? "Update product" : "Add new product"}>
@@ -143,41 +176,16 @@ const ProductTable = ({ data }) => {
 
             <div className="flex flex-col">
                 <div className="overflow-x-auto">
-                    <div className="flex justify-between py-3 pl-2">
-                        <div className="relative max-w-xs">
-                            <label htmlFor="hs-table-search" className="sr-only">
-                                Search
-                            </label>
-                            <input
-                                type="text"
-                                name="hs-table-search"
-                                id="hs-table-search"
-                                className="block w-full p-3 pl-10 text-sm border-gray-200 rounded-md focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400"
-                                placeholder="Search..."
-                            />
-                            <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                                <svg
-                                    className="h-3.5 w-3.5 text-gray-400"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="16"
-                                    height="16"
-                                    fill="currentColor"
-                                    viewBox="0 0 16 16"
-                                >
-                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
-                                </svg>
-                            </div>
-                        </div>
-
+                    <div className="flex justify-end py-3 pl-2">
                         <div className="flex items-center space-x-2">
-                            <div className="relative">
-                                <button className="relative z-0 inline-flex text-sm rounded-md shadow-sm focus:ring-accent-500 focus:border-accent-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1">
-                                    <span className="relative inline-flex items-center px-3 py-3 space-x-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md sm:py-2">
+                            <div className="relative" onClick={selectedProducts?.length ? multipleProductDelete : null}>
+                                <button className="relative z-0 inline-flex text-sm rounded-md shadow-sm hover:bg-gray-50">
+                                    <span className={`relative inline-flex items-center px-3 py-3 space-x-2 text-sm font-medium  ${selectedProducts?.length ? 'text-white bg-sky-400 border-gry-200' : 'bg-gray-200 text-gray-600 border-gray-300'} border rounded-md sm:py-2`}>
                                         <div>
-                                            <AiOutlineFilter />
+                                            <AiOutlineDelete />
                                         </div>
                                         <div className="hidden sm:block">
-                                            Filters
+                                            Delete {selectedProducts?.length || 0}
                                         </div>
                                     </span>
                                 </button>
@@ -186,7 +194,7 @@ const ProductTable = ({ data }) => {
                                 setIsEdit(false)
                                 setOpenModal(true)
                             }}>
-                                <button className="relative z-0 inline-flex text-sm rounded-md shadow-sm focus:ring-accent-500 focus:border-accent-500 bg-sky-100 hover:bg-sky-50 focus:z-10 focus:outline-none focus:ring-1">
+                                <button className="relative z-0 inline-flex text-sm rounded-md shadow-sm bg-sky-100 hover:bg-sky-50 ">
                                     <span className="relative inline-flex items-center px-3 py-3 space-x-2 text-sm font-medium text-gray-600 bg-white border border-sky-200 rounded-md sm:py-2">
                                         <div>
                                             <AiOutlinePlus />
@@ -208,9 +216,11 @@ const ProductTable = ({ data }) => {
                                         <th scope="col" className="py-3 pl-4">
                                             <div className="flex items-center h-5">
                                                 <input
+                                                    onChange={(e) => handelCheckbox(e, 'all')}
                                                     id="checkbox-all"
                                                     type="checkbox"
                                                     className="text-blue-600 border-gray-200 rounded focus:ring-blue-500"
+                                                    checked={selectedProducts?.length === products?.length}
                                                 />
                                                 <label
                                                     htmlFor="checkbox"
@@ -256,13 +266,15 @@ const ProductTable = ({ data }) => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
-                                    {products && products.map((item, index) => (
-                                        <tr key={item?.id} className={`${deletedIds.includes(item?.id) && 'hidden'}`}>
+                                    {data && data.map((item, index) => (
+                                        <tr key={item?.id}>
                                             <td className="py-3 pl-4" role="button">
                                                 <div className="flex items-center h-5">
                                                     <input
+                                                        onChange={(e) => handelCheckbox(e, item)}
                                                         type="checkbox"
                                                         className="text-blue-600 border-gray-200 rounded focus:ring-blue-500"
+                                                        checked={item?.selected}
                                                     />
                                                     <label
                                                         htmlFor="checkbox"
@@ -285,7 +297,7 @@ const ProductTable = ({ data }) => {
                                                 {item?.description}
                                             </td>
 
-                                            <td className="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
+                                            <td className="flex justify-end px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
                                                 <div className='flex gap-3'>
                                                     <button
                                                         onClick={() => handelEdit(item)}
@@ -307,6 +319,7 @@ const ProductTable = ({ data }) => {
                                 </tbody>
                             </table>
                         </div>
+                        <Pagination current={currentPage} last={totalCount} pageChange={handelPagination} />
                     </div>
                 </div>
             </div>
