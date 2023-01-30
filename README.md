@@ -5,6 +5,12 @@
     ├──app
         ├──config.js                   # Base url
 
+├── src
+    ├── app                   
+    │   ├── config.js          # Base url
+    │   ├──          
+    │   └──                
+    └── ...
 
 ### `git pull`
 
