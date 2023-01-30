@@ -97,7 +97,7 @@ const SignIn = () => {
                         <form className="space-y-6" onSubmit={submitForm}>
                             <div>
                                 <label htmlFor="username" className="block mb-2 text-sm font-medium text-gray-900 ">Username</label>
-                                <input onChange={handelChange} type="text" name="username" id="username" value={credential?.username} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-sky-200 focus:border-sky-200 block w-full p-2.5 " placeholder="dev.foysal@gmail.com" required />
+                                <input onChange={handelChange} type="text" name="username" id="username" value={credential?.username} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-sky-200 focus:border-sky-200 block w-full p-2.5 " placeholder="foysalmahmud" required />
                             </div>
                             <div>
                                 <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-900 ">password</label>
