@@ -91,16 +91,23 @@ const ProductTable = ({ data, totalCount }) => {
 
     const submitForm = (e) => {
         e.preventDefault();
+        let formData = new FormData();
+        formData.append('title', product?.title)
+        formData.append('image', product?.image)
+        formData.append('price', product?.price)
+        formData.append('description', product?.description)
 
         if (!isEdit) {
-            addProduct(product).unwrap().then(res => {
+
+            addProduct(formData).unwrap().then(res => {
                 setProducts(prevState => [
                     ...prevState,
                     {
                         id: data?.length + 1,
-                        title: product?.title,
-                        price: product?.price,
-                        description: product?.description,
+                        title: res?.products?.title,
+                        image: res?.products?.image,
+                        price: res?.products?.price,
+                        description: res?.products?.description,
                     }
                 ])
                 toast.success(res?.message)
@@ -111,10 +118,11 @@ const ProductTable = ({ data, totalCount }) => {
                 toast.error(error?.data?.message)
             })
         } else {
-            updateProduct(product).unwrap().then(res => {
+            updateProduct(formData).unwrap().then(res => {
                 let newProduct = {
                     id: product?.id,
                     title: product?.title,
+                    image: product?.image,
                     price: product?.price,
                     description: product?.description,
                 }
@@ -178,18 +186,20 @@ const ProductTable = ({ data, totalCount }) => {
                 <div className="overflow-x-auto">
                     <div className="flex justify-end py-3 pl-2">
                         <div className="flex items-center space-x-2">
-                            <div className="relative" onClick={selectedProducts?.length ? multipleProductDelete : null}>
-                                <button className="relative z-0 inline-flex text-sm rounded-md shadow-sm hover:bg-gray-50">
-                                    <span className={`relative inline-flex items-center px-3 py-3 space-x-2 text-sm font-medium  ${selectedProducts?.length ? 'text-white bg-sky-400 border-gry-200' : 'bg-gray-200 text-gray-600 border-gray-300'} border rounded-md sm:py-2`}>
-                                        <div>
-                                            <AiOutlineDelete />
-                                        </div>
-                                        <div className="hidden sm:block">
-                                            Delete {selectedProducts?.length || 0}
-                                        </div>
-                                    </span>
-                                </button>
-                            </div>
+                            {selectedProducts?.length ? (
+                                <div className="relative" onClick={selectedProducts?.length ? multipleProductDelete : null}>
+                                    <button className="relative z-0 inline-flex text-sm rounded-md shadow-sm hover:bg-gray-50">
+                                        <span className={`relative inline-flex items-center px-3 py-3 space-x-2 text-sm font-medium  ${selectedProducts?.length ? 'text-white bg-sky-400 border-gry-200' : 'bg-gray-200 text-gray-600 border-gray-300'} border rounded-md sm:py-2`}>
+                                            <div>
+                                                <AiOutlineDelete />
+                                            </div>
+                                            <div className="hidden sm:block">
+                                                Delete {selectedProducts?.length || 0}
+                                            </div>
+                                        </span>
+                                    </button>
+                                </div>
+                            ) : null}
                             <div className="relative" onClick={() => {
                                 setIsEdit(false)
                                 setOpenModal(true)
@@ -240,6 +250,12 @@ const ProductTable = ({ data, totalCount }) => {
                                             scope="col"
                                             className="px-6 py-3 text-xs font-bold text-left text-gray-500 uppercase "
                                         >
+                                            Image
+                                        </th>
+                                        <th
+                                            scope="col"
+                                            className="px-6 py-3 text-xs font-bold text-left text-gray-500 uppercase "
+                                        >
                                             Title
                                         </th>
 
@@ -266,7 +282,7 @@ const ProductTable = ({ data, totalCount }) => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
-                                    {data && data.map((item, index) => (
+                                    {products && products.map((item, index) => (
                                         <tr key={item?.id}>
                                             <td className="py-3 pl-4" role="button">
                                                 <div className="flex items-center h-5">
@@ -286,6 +302,9 @@ const ProductTable = ({ data, totalCount }) => {
                                             </td>
                                             <td className="px-6 py-4 text-sm font-medium text-gray-800 ">
                                                 {++index}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-800 whitespace-nowrap">
+                                                <img src={item?.image} width="50" className='rounded' />
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-800 whitespace-nowrap">
                                                 {item?.title}
