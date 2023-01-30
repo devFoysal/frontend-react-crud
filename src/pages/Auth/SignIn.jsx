@@ -8,8 +8,8 @@ import Loader from '../../components/Loader';
 import { toast } from 'react-toastify';
 
 const initialState = {
-    username: "foysalmahmud",
-    password: "123456"
+    username: "",
+    password: ""
 }
 
 const SignIn = () => {
