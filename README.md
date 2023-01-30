@@ -1,11 +1,10 @@
 # Frontend
 #### React js
-                    # Product image path
-├── src
-    ├──app
-        ├──config.js                   # Base url
+
 
 ├── src
+    │
+    │
     ├── app                   
     │   ├── config.js          # Base url
     │   ├──          
