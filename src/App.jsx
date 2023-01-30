@@ -9,7 +9,6 @@ import NotFound from "./pages/NotFound";
 import PrivateRoutes from "./components/Routes/PrivateRoutes";
 
 // Admin
-import Dashboard from "./pages/Admin/Dashboard";
 import ProductList from "./pages/Admin/Products";
 
 const App = () => {
@@ -30,9 +29,9 @@ const App = () => {
       <Routes>
         <Route index element={<Home />} />
         <Route path="/" element={<Home />} />
-        <Route path="/products" element={<Products />} />
+        <Route path="/product/:id" element={<Products />} />
         <Route path="/signin" element={<SignIn />} />
-        <Route element={<PrivateRoutes user={!!cookies.get('isAuthenticated')} />} >
+        <Route element={<PrivateRoutes />} >
           <Route path={`${routePrefix}/products`} element={<ProductList />} />
         </Route>
         <Route path="*" element={<NotFound />} />

@@ -30,8 +30,12 @@ const SignIn = () => {
         }))
     }
 
-    if (cookies.get('isAuthenticated')) {
-        return (<Navigate to="/admin/products" />)
+
+
+    if (cookies.get('isAuthenticated') && cookies.get('isAuthenticated') === 'true') {
+        setTimeout(() => {
+            navigate("/admin/products")
+        }, 500)
     }
 
     const submitForm = (e) => {
@@ -40,22 +44,26 @@ const SignIn = () => {
         if (isSignInForm) {
             signIn(credential).unwrap().then(res => {
                 toast.success(res?.message)
-                cookies.set("user", JSON.stringify(res?.user))
-                cookies.set("isAuthenticated", !!res?.token)
-                setTimeout(() => {
-                    navigate("/admin/products")
-                }, 500)
+                if (!!res?.token) {
+                    cookies.set("user", JSON.stringify(res?.user))
+                    cookies.set("isAuthenticated", !!res?.token)
+                    setTimeout(() => {
+                        navigate("/admin/products")
+                    }, 100)
+                }
             }).catch(error => {
                 toast.error(error?.data?.message)
             })
         } else {
             signUp(credential).unwrap().then(res => {
                 toast.success(res?.message)
-                cookies.set("user", JSON.stringify(res?.user))
-                cookies.set("isAuthenticated", !!res?.token)
-                setTimeout(() => {
-                    navigate("/admin/products")
-                }, 500)
+                if (!!res?.token) {
+                    cookies.set("user", JSON.stringify(res?.user))
+                    cookies.set("isAuthenticated", !!res?.token)
+                    setTimeout(() => {
+                        navigate("/admin/products")
+                    }, 100)
+                }
             }).catch(error => {
                 toast.error(error?.data?.message)
             })
@@ -68,7 +76,7 @@ const SignIn = () => {
     return (
         <Layout>
 
-            <div className='flex  justify-center py-7'>
+            <div className='flex  justify-center py-16'>
 
                 <div className='w-full max-w-sm'>
                     <ul className="flex flex-wrap w-full mb-2 bg-white border border-sky-200 rounded-lg overflow-hidden">

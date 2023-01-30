@@ -33,23 +33,34 @@ export const productApiSlice = apiSlice
             return;
           }
           const { data, error } = await queryFulfilled;
-  
+
           if (data) {
             // Add product On Current Request To Page 1
             dispatch(
-              productApiSlice.util.updateQueryData("getProducts", 1, (draft) => {
-                // productAdapter.addMany(draft, productSelectors.selectAll(data));
-                productAdapter.setAll(draft, productSelectors.selectAll(data));
-                // draft.hasMorePages;
-              })
+              productApiSlice.util.updateQueryData(
+                "getProducts",
+                1,
+                (draft) => {
+                  // productAdapter.addMany(draft, productSelectors.selectAll(data));
+                  productAdapter.setAll(
+                    draft,
+                    productSelectors.selectAll(data)
+                  );
+                  // draft.hasMorePages;
+                }
+              )
             );
-  
+
             if (page > 1) {
               // Remove Cached Data From State Since We Already Added It To Page 1
               dispatch(
-                productApiSlice.util.updateQueryData("getProducts", page, (draft) => {
-                  draft = productAdapter.getInitialState();
-                })
+                productApiSlice.util.updateQueryData(
+                  "getProducts",
+                  page,
+                  (draft) => {
+                    draft = productAdapter.getInitialState();
+                  }
+                )
               );
             }
           }
@@ -59,7 +70,7 @@ export const productApiSlice = apiSlice
       getProduct: builder.query({
         query: (id) => `products/${id}`,
         providesTags: (result, error, id) => [{ type: "products", id }],
-        // transformResponse: (response) => response?.data,
+        transformResponse: (response) => response,
       }),
 
       addProduct: builder.mutation({
@@ -75,10 +86,10 @@ export const productApiSlice = apiSlice
       updateProduct: builder.mutation({
         query: (body) => {
           return {
-            url: `products/${body?.id}`,
+            url: `products/${body.get('id')}`,
             method: "PUT",
             body: body,
-            // headers: { file: true },
+            headers: { file: true },
           };
         },
       }),

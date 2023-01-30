@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { AiOutlineDelete, AiOutlinePlus } from "react-icons/ai";
 import { toast } from 'react-toastify';
+import { IMAGE_URL } from '../../app/config';
 import { useAddProductMutation, useDeleteMultipleProductMutation, useDeleteProductMutation, useUpdateProductMutation } from '../../app/features/product/productApiSlice';
 import useFetchProducts from '../../hooks/useFetchProducts';
 import Loader from '../Loader';
@@ -100,14 +101,15 @@ const ProductTable = ({ data, totalCount }) => {
         if (!isEdit) {
 
             addProduct(formData).unwrap().then(res => {
+                console.log(res, 'res')
                 setProducts(prevState => [
                     ...prevState,
                     {
                         id: data?.length + 1,
-                        title: res?.products?.title,
-                        image: res?.products?.image,
-                        price: res?.products?.price,
-                        description: res?.products?.description,
+                        title: res?.product?.title,
+                        image: res?.product?.image,
+                        price: res?.product?.price,
+                        description: res?.product?.description,
                     }
                 ])
                 toast.success(res?.message)
@@ -118,7 +120,9 @@ const ProductTable = ({ data, totalCount }) => {
                 toast.error(error?.data?.message)
             })
         } else {
+            formData.append('id', product?.id)
             updateProduct(formData).unwrap().then(res => {
+                console.log(res, 'res')
                 let newProduct = {
                     id: product?.id,
                     title: product?.title,
@@ -304,7 +308,7 @@ const ProductTable = ({ data, totalCount }) => {
                                                 {++index}
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-800 whitespace-nowrap">
-                                                <img src={item?.image} width="50" className='rounded' />
+                                                <img src={`${IMAGE_URL}/${item?.image}`} width="50" className='rounded' />
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-800 whitespace-nowrap">
                                                 {item?.title}
